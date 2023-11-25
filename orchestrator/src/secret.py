@@ -4,6 +4,7 @@ from typing import Dict
 import uuid
 
 from nightfall import Finding
+from .source_service import Source
 
 CONTEXT_BYTES = 20
 
@@ -42,17 +43,17 @@ class Secret:
     source_id: uuid.UUID = None
 
     @classmethod
-    def from_nightfall_finding(cls, finding: Finding, content: str):
+    def from_nightfall_finding(cls, finding: Finding, source: Source):
         context_before = finding.before_context 
         context_after = finding.after_context
         if context_before is None:
             start = max(0, finding.byte_range.start - CONTEXT_BYTES)
             end = finding.byte_range.start
-            context_before = content[start:end]
+            context_before = source.content[start:end]
         if context_after is None:
             start = finding.byte_range.end
-            end = min(len(content), finding.byte_range.end + CONTEXT_BYTES)
-            context_after = content[start:end]
+            end = min(len(source.content), finding.byte_range.end + CONTEXT_BYTES)
+            context_after = source.content[start:end]
         return cls(
             value=finding.finding,
             detector=Detector(finding.detector_name, "NightFallAPI"),
@@ -61,12 +62,13 @@ class Secret:
             range=Range(finding.byte_range.start, finding.byte_range.end),
             secret_type=finding.detector_name,
             confidence=Confidence(finding.confidence.name),
+            source_id=source.id,
         )
     
     @classmethod
-    def from_regex_match(cls, match: dict, content: str):
-        context_before = content[max(0, match['byte_start'] - CONTEXT_BYTES):match['byte_start']]
-        context_after = content[match['byte_end']:min(len(content), match['byte_end'] + CONTEXT_BYTES)]
+    def from_regex_match(cls, match: dict, source: Source):
+        context_before = source.content[max(0, match['byte_start'] - CONTEXT_BYTES):match['byte_start']]
+        context_after = source.content[match['byte_end']:min(len(source.content), match['byte_end'] + CONTEXT_BYTES)]
         return cls(
             value=match['value'],
             detector=Detector(match['pattern_name'], "RegexDetector", {"regex_pattern": match['regex_pattern']}),
@@ -75,4 +77,5 @@ class Secret:
             range=Range(match['byte_start'], match['byte_end']),
             secret_type=match['secret_type'],
             confidence=Confidence.VERY_LIKELY if match['confidence'] == 'high' else Confidence.UNLIKELY,
+            source_id=source.id,
         )

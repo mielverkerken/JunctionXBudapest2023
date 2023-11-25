@@ -1,5 +1,7 @@
 from typing import List
 import os
+
+from ..source_service import Source
 from ..secret_service import SecretService
 from ..detectors.nightfallAPIConnector import NightFallAPIConnector
 from .idetector import IDetector
@@ -16,9 +18,9 @@ class DetectorService:
         self.detectors = [nightfall_detector, regex_detector]
         self.secret_service = secret_service
 
-    async def scan_text_for_secrets(self, text: List[str]) -> List[Secret]:
+    async def scan_text_for_secrets(self, sources: List[Source]) -> List[Secret]:
         for detector in self.detectors:
-            found_secrets = await detector.scan_text_for_secrets(text)
+            found_secrets = await detector.scan_text_for_secrets(sources)
             for found_secret in found_secrets:
                 self.secret_service.save_all(found_secret)
         return
