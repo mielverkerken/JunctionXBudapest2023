@@ -32,8 +32,6 @@ async def notification_listen(request: Request):
         notification_data = await request.json()
         print(notification_data)
         resource = notification_data['value'][0]['resource'] #e.g. "Users/622eaaff-0683-4862-9de4-f2ec83c2bd98/Messages/AAMkAGUwNjQ4ZjIxAAA="
-        resourceId = notification_data['value'][0]['resourceData']['id'] #e.g. "AAMkAGUwNjQ4ZjIxAAA="
-        
         return {'status': 'success'}
 
     except json.JSONDecodeError:
