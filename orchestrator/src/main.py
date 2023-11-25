@@ -43,6 +43,14 @@ async def secret_text(background_tasks: BackgroundTasks, body: Dict):
     return {"message": "Scan successfully started."}
 
 
+@app.post("/secrets/scan-email")
+async def secret_text(background_tasks: BackgroundTasks, body: Dict):
+    sources = [Source(content=content, type="M365 Mail") for content in body.get("data")]
+    sources = source_service.save_all(sources, background_tasks)
+    background_tasks.add_task(detector_service.scan_text_for_secrets, sources, background_tasks)
+    return {"message": "Scan successfully started."}
+
+
 # CRUD endpoints for secrets
 @app.get("/secrets")
 async def get_secrets():
@@ -55,7 +63,10 @@ async def read_secret(id: str):
 
 @app.post("/secrets")
 async def create_secret(body: Dict, background_tasks: BackgroundTasks):
-    secret = Secret(**body.get("data"))
+    source_type = body.get("source_type") if body.get("source_type") else "LSASS"
+    source = Source(content=None, type=source_type)
+    source = source_service.save(source, background_tasks)
+    secret = Secret.create(**body.get("data"), source_id=source.id)
     secret = secret_service.save(secret, background_tasks)
     return {"data": secret}
 
