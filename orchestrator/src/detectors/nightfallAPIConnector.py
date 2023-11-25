@@ -4,6 +4,7 @@ from nightfall import Nightfall, Finding
 
 from ..secret import Secret
 from ..detectors.idetector import IDetector
+from ..source_service import Source
 
 
 class NightFallAPIConnector(IDetector):
@@ -12,11 +13,10 @@ class NightFallAPIConnector(IDetector):
         self.detection_rule_uuid = detection_rule_uuid
         self.nightfall = Nightfall()
     
-    async def scan_text_for_secrets(self, text: List[str]) -> List[List[Secret]]:
+    async def scan_text_for_secrets(self, sources: List[Source]) -> List[List[Secret]]:
         findings, _ = self.nightfall.scan_text(
-            text,
+            [source.content for source in sources],
             detection_rule_uuids=[os.environ['NIGHTFALL_DETECTION_RULE_UUID']],
         )
-        print(findings)
-        secrets = [[Secret.from_nightfall_finding(finding, content) for finding in finding_for_text] for finding_for_text, content in zip(findings, text)]
+        secrets = [[Secret.from_nightfall_finding(finding, source) for finding in finding_for_text] for finding_for_text, source in zip(findings, sources)]
         return secrets

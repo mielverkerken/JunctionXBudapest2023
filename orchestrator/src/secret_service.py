@@ -8,8 +8,8 @@ class SecretService:
         self.data : Dict[uuid.UUID, Secret] = {}
 
     def save(self, secret: Secret) -> None:
-        id = str(uuid.uuid4())
-        self.data[id] = secret
+        secret.id = str(uuid.uuid4())
+        self.data[secret.id] = secret
 
     def save_all(self, secrets: List[Secret]) -> None:
         for secret in secrets:
@@ -19,6 +19,9 @@ class SecretService:
         if id not in self.data:
             raise Exception("No secret found with this ID.")
         return self.data[id]
+    
+    def read_all(self) -> List[Secret]:
+        return list(self.data.values())
 
     def update(self, id: uuid.UUID, secret: Secret) -> None:
         if id not in self.data:
