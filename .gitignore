@@ -160,4 +160,9 @@ cython_debug/
 #.idea/
 
 
+#config file
 config.cfg
+
+# Environment variables
+*.env
+
