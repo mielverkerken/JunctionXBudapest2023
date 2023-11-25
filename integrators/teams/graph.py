@@ -46,21 +46,13 @@ class Graph:
     async def get_chatids_from_user(self, id):
         result = await self.app_client.users.by_user_id(id).chats.get()
         return result
-    
+
     async def get_chatmessages_from_chat(self, id, chatid):
         result = await self.app_client.users.by_user_id(id).chats.by_chat_id(chatid).messages.get()
         return result
 
     # https://learn.microsoft.com/en-us/graph/api/chats-getallmessages?view=graph-rest-1.0&tabs=python#request
     async def get_allchatmessages_from_user(self, id):
-        # query_params = GetAllMessagesRequestBuilder.GetAllMessagesRequestBuilderGetQueryParameters(
-		#     top = 2,
-        # )
-
-        # request_configuration = GetAllMessagesRequestBuilder.GetAllMessagesRequestBuilderGetRequestConfiguration(
-        #     query_parameters = query_params,
-        # )
-
         result = await self.app_client.users.by_user_id(id).chats.get_all_messages.get()
         return result
     
@@ -121,3 +113,10 @@ class Graph:
         response = requests.post(url, json=data, headers=headers)
         print (response.text)
         return response
+
+
+    async def get_mail(self, id, messageid):
+        print(id)
+        print (messageid)
+        result = await self.app_client.users.by_user_id(id).messages.by_message_id(messageid).get()
+        return result
