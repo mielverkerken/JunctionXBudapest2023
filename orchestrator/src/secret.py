@@ -34,11 +34,11 @@ class Range():
 class Secret:
     value: str
     detector: Detector
-    context_before: str
-    context_after: str
-    range: Range
     confidence: Confidence
     secret_type: str
+    context_before: str = None
+    context_after: str = None
+    range: Range = None
     id: uuid.UUID = str(uuid.uuid4())
     source_id: uuid.UUID = None
 
