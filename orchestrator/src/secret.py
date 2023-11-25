@@ -53,6 +53,20 @@ class Secret:
     source_id: uuid.UUID = None
 
     @classmethod
+    def create(cls, **kwargs):
+        return cls(
+            value=kwargs.get('value'),
+            detector=Detector(**kwargs.get('detector')),
+            confidence=Confidence(kwargs.get('confidence')),
+            secret_type=kwargs.get('secret_type'),
+            context_before=kwargs.get('context_before'),
+            context_after=kwargs.get('context_after'),
+            range=kwargs.get('range'),
+            id=str(uuid.uuid4()),
+            source_id=kwargs.get('source_id')
+        )
+
+    @classmethod
     def from_nightfall_finding(cls, finding: Finding, source: Source):
         context_before = finding.before_context 
         context_after = finding.after_context
