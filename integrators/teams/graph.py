@@ -119,4 +119,5 @@ class Graph:
         print(id)
         print (messageid)
         result = await self.app_client.users.by_user_id(id).messages.by_message_id(messageid).get()
+        # print(result)
         return result

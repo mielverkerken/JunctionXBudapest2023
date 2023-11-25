@@ -3,9 +3,18 @@ from fastapi import FastAPI, Request, Response
 from pydantic import BaseModel
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 import json
+from graph import Graph
+import configparser
+import re
 
-# Path to your private key file
-private_key_file_path = './private_key.pem'
+
+# # Path to your private key file
+# private_key_file_path = './private_key.pem'
+
+config = configparser.ConfigParser()
+config.read(['config.cfg', 'config.dev.cfg'])
+azure_settings = config['azure']
+graph: Graph = Graph(azure_settings)
 
 app = FastAPI()
 
@@ -23,15 +32,33 @@ async def notification_listen(request: Request):
     # First, try to retrieve the validation token from query parameters (for subscription validation)  
     # If no validation token, it's an actual notification - process the JSON body
     validation_token = request.query_params.get('validationToken')
+    print(validation_token)
     if validation_token:
         #If there's a validation token, respond with it
         print("validation_token=" + validation_token)
         return Response(content=validation_token, media_type="text/plain", status_code=HTTP_200_OK)
     #
     try:
+        print("we got a new message in")
         notification_data = await request.json()
-        print(notification_data)
+        # print(notification_data)
         resource = notification_data['value'][0]['resource'] #e.g. "Users/622eaaff-0683-4862-9de4-f2ec83c2bd98/Messages/AAMkAGUwNjQ4ZjIxAAA="
+        # print(resource)
+        pattern = r"Users\('([^']+)'\)/messages\('([^']+)'\)"
+
+        # Using regex to find the IDs
+        match = re.search(pattern, resource)
+
+        if match:
+            user_id = match.group(1)
+            message_id = match.group(2)
+            print(f"User ID: {user_id}")
+            print(f"Message ID: {message_id}")
+            mail = await graph.get_mail(user_id,message_id)
+            print(mail)
+            print("-----")
+        else:
+            print("No match found")
         return {'status': 'success'}
 
     except json.JSONDecodeError:
