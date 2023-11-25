@@ -1,21 +1,19 @@
-from dataclasses import dataclass
 from typing import Dict, List
 import uuid
 
-@dataclass
-class Source:
-    """Source describes a submitted document for scanning."""
-    content: str
-    id: uuid.UUID = str(uuid.uuid4())
+from .websocket_manager import WebSocketManager
 
+from .source import Source
 
 class SourceService:
-    def __init__(self):
+    def __init__(self, websocket_manager: WebSocketManager):
         self.data : Dict[uuid.UUID, Source] = {}
+        self.websocket_manager = websocket_manager
 
     def save(self, source: Source) -> None:
         source.id = str(uuid.uuid4())
         self.data[source.id] = source
+        self.websocket_manager.update_source(source)
         return source
 
     def save_all(self, sources: List[Source]) -> None:

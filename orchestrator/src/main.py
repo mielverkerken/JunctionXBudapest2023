@@ -1,7 +1,9 @@
 from typing import Dict, List
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, WebSocket, WebSocketDisconnect
 
-from .source_service import SourceService, Source
+from .source import Source
+
+from .source_service import SourceService
 from .secret import Secret
 from .secret_service import SecretService
 from pydantic import BaseModel
@@ -9,11 +11,13 @@ import json
 import os
 from .detectors.detector import DetectorService
 from .detectors.nightfallAPIConnector import NightFallAPIConnector
+from .websocket_manager import WebSocketManager
 
 
 app = FastAPI()
-secret_service = SecretService()
-source_service = SourceService()
+websocket_manager = WebSocketManager()
+secret_service = SecretService(websocket_manager)
+source_service = SourceService(websocket_manager)
 detector_service = DetectorService(secret_service)
 
 @app.get("/")
@@ -39,6 +43,12 @@ async def read_secret(id: str):
     secret = secret_service.read(id)
     return {"data": secret}
 
+@app.post("/secrets")
+async def create_secret(body: Dict):
+    secret = Secret(**body)
+    secret = secret_service.save(secret)
+    return {"data": secret}
+
 # CRUD endpoints for sources
 @app.get("/sources")
 async def get_sources():
@@ -48,3 +58,19 @@ async def get_sources():
 async def get_source(id: str):
     source = source_service.read(id)
     return {"data": source}
+
+## Websocket endpoint
+@app.websocket("/ws/{topic}")
+async def websocket_endpoint(websocket: WebSocket, topic: str):
+    await websocket_manager.connect(websocket, topic)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            if data == "disconnect":
+                websocket_manager.disconnect(websocket)
+                break
+    except WebSocketDisconnect:
+        websocket_manager.disconnect(websocket)
+    except Exception as e:
+        print(e)
+        websocket_manager.disconnect(websocket)

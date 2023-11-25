@@ -1,7 +1,7 @@
 from typing import List
 import os
 
-from ..source_service import Source
+from ..source import Source
 from ..secret_service import SecretService
 from ..detectors.nightfallAPIConnector import NightFallAPIConnector
 from .idetector import IDetector

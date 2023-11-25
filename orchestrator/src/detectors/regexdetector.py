@@ -1,7 +1,7 @@
 from typing import List
 from .idetector import IDetector
 from ..secret import Secret
-from ..source_service import Source
+from ..source import Source
 import requests
 
 
