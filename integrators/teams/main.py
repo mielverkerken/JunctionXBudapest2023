@@ -25,6 +25,7 @@ async def main():
         print('5. Get all chat messages from user')
         print('6. create subscription all message changes')
         print('7. create subscription all mail changes from user')
+        print('8. get mail by messageid')
 
         try:
             choice = int(input())
@@ -48,6 +49,8 @@ async def main():
                 await create_subscription_all_message_changes(graph)
             elif choice == 7:
                 await create_subscription_all_mail_changes_from_user(graph)
+            elif choice == 8:
+                await get_mail(graph)
             else:
                 print('Invalid choice!\n')
         except ODataError as odata_error:
@@ -100,6 +103,11 @@ async def create_subscription_all_mail_changes_from_user(graph: Graph):
     print(result)
 
 
+async def get_mail(graph: Graph):
+    id = "099ba34e-ce8b-4660-84de-7911e9c3a4ef"
+    messageid="AAMkAGMxZTY4NGExLTdiMTctNGJiMy1hOGJiLTU1ODFiMDAzNDk2ZQBGAAAAAAA_8jfAn_F5QKsq8M9yie2mBwDiCXJ_prOST6K0k5P70wweAAAAAAEMAADiCXJ_prOST6K0k5P70wweAAAE_WKMAAA="
+    result = await graph.get_mail(id, messageid)
+    print(result)
 
 # Run main
 asyncio.run(main())
