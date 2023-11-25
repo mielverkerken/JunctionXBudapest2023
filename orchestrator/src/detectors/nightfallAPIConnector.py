@@ -2,8 +2,8 @@ import os
 from typing import List
 from nightfall import Nightfall, Finding
 
-from orchestrator.secret import Secret
-from orchestrator.detectors.idetector import IDetector
+from ..secret import Secret
+from ..detectors.idetector import IDetector
 
 
 class NightFallAPIConnector(IDetector):

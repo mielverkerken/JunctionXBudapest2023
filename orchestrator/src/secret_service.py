@@ -1,7 +1,7 @@
 from typing import Dict, List
 import uuid
 
-from orchestrator.secret import Secret
+from .secret import Secret
 
 class SecretService:
     def __init__(self):
