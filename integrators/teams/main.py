@@ -3,33 +3,6 @@ import configparser
 from msgraph.generated.models.o_data_errors.o_data_error import ODataError
 from graph import Graph
 
-async def get_chatids_from_user(graph: Graph):
-    id="099ba34e-ce8b-4660-84de-7911e9c3a4ef"
-    chats = await graph.get_chatids_from_user(id)
-    print(chats)
-
-async def get_chatmessages_from_chat(graph: Graph):
-    id="099ba34e-ce8b-4660-84de-7911e9c3a4ef"
-    chatid = "19:082bc55a-3db4-4906-99c5-a66fb20297e3_099ba34e-ce8b-4660-84de-7911e9c3a4ef@unq.gbl.spaces"
-    chats = await graph.get_chatmessages_from_chat(id, chatid)
-    print(chats)
-
-async def get_allchatmessages_from_user(graph: Graph):
-    id="099ba34e-ce8b-4660-84de-7911e9c3a4ef"
-    chats = await graph.get_allchatmessages_from_user(id)
-    print(chats)
-
-async def create_subscription_all_message_changes(graph: Graph):
-    result = await graph.create_subscription_all_message_changes()
-    print(result)
-
-async def create_subscription_all_mail_changes_from_user(graph: Graph):
-    result = await graph.create_subscription_all_message_changes()
-    print(result)
-
-
-
-
 async def main():
     print('Python Graph App-Only Tutorial\n')
 
@@ -122,7 +95,8 @@ async def create_subscription_all_message_changes(graph: Graph):
     print(result)
 
 async def create_subscription_all_mail_changes_from_user(graph: Graph):
-    result = await graph.create_subscription_all_message_changes()
+    id="099ba34e-ce8b-4660-84de-7911e9c3a4ef"
+    result = await graph.create_subscription_all_mail_changes_from_user(id)
     print(result)
 
 
