@@ -6,6 +6,7 @@ import json
 from graph import Graph
 import configparser
 import re
+from bs4 import BeautifulSoup
 
 
 # # Path to your private key file
@@ -15,8 +16,19 @@ config = configparser.ConfigParser()
 config.read(['config.cfg', 'config.dev.cfg'])
 azure_settings = config['azure']
 graph: Graph = Graph(azure_settings)
+server = "https://fca1-193-225-122-113.ngrok-free.app"
 
 app = FastAPI()
+
+def extractBody(mail):
+    soup = BeautifulSoup(mail, "html.parser")
+    messageContent = soup.body.text
+    return messageContent
+    
+def sendToServer(message,server):
+    messageJson = {"data": [message]}
+    response = requests.post(server + "/secrets/scan-email", json=messageJson)
+    return response.status_code
 
 @app.get("/")
 def read_root():
@@ -56,7 +68,9 @@ async def notification_listen(request: Request):
             print(f"Message ID: {message_id}")
             mail = await graph.get_mail(user_id,message_id)
             print(mail)
-            print("-----")
+            messageContent = extractBody(str(mail))
+            print(messageContent)
+            sendToServer(messageContent,server)
         else:
             print("No match found")
         return {'status': 'success'}
