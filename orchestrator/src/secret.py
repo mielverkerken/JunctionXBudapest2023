@@ -1,10 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from enum import Enum
 from typing import Dict
 import uuid
+import json
 
 from nightfall import Finding
-from .source_service import Source
+from .source import Source
 
 CONTEXT_BYTES = 20
 
@@ -15,6 +16,9 @@ class Detector():
     provider : str
     properties : Dict[str, str] = None
 
+    def to_dict(self):
+        return asdict(self)
+
 class Confidence(Enum):
     """Confidence describes the certainty that a piece of content matches a detector."""
     VERY_UNLIKELY = "VERY_UNLIKELY"
@@ -23,24 +27,44 @@ class Confidence(Enum):
     LIKELY = "LIKELY"
     VERY_LIKELY = "VERY_LIKELY"
 
+    def to_dict(self):
+        return self.value
+
 @dataclass
 class Range():
     """Range describes the location of a secret in a piece of content."""
     start: int
     end: int
 
+    def to_dict(self):
+        return asdict(self)
+
 
 @dataclass
 class Secret:
     value: str
     detector: Detector
-    context_before: str
-    context_after: str
-    range: Range
     confidence: Confidence
     secret_type: str
+    context_before: str = None
+    context_after: str = None
+    range: Range = None
     id: uuid.UUID = str(uuid.uuid4())
     source_id: uuid.UUID = None
+
+    @classmethod
+    def create(cls, **kwargs):
+        return cls(
+            value=kwargs.get('value'),
+            detector=Detector(**kwargs.get('detector')),
+            confidence=Confidence(kwargs.get('confidence')),
+            secret_type=kwargs.get('secret_type'),
+            context_before=kwargs.get('context_before'),
+            context_after=kwargs.get('context_after'),
+            range=kwargs.get('range'),
+            id=str(uuid.uuid4()),
+            source_id=kwargs.get('source_id')
+        )
 
     @classmethod
     def from_nightfall_finding(cls, finding: Finding, source: Source):
@@ -79,3 +103,19 @@ class Secret:
             confidence=Confidence.VERY_LIKELY if match['confidence'] == 'high' else Confidence.UNLIKELY,
             source_id=source.id,
         )
+    
+    def to_dict(self):
+        return {
+            "value": self.value,
+            "detector": self.detector.to_dict(),
+            "confidence": self.confidence.to_dict(),
+            "secret_type": self.secret_type,
+            "context_before": self.context_before,
+            "context_after": self.context_after,
+            "range": self.range.to_dict() if self.range else None,
+            "id": str(self.id),
+            "source_id": str(self.source_id) if self.source_id else None
+        }
+
+    def to_json(self):
+        return json.dumps(self.to_dict())

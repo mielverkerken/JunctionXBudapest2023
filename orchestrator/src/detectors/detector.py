@@ -1,12 +1,13 @@
 from typing import List
 import os
 
-from ..source_service import Source
+from ..source import Source
 from ..secret_service import SecretService
 from ..detectors.nightfallAPIConnector import NightFallAPIConnector
 from .idetector import IDetector
 from .regexdetector import RegexDetectorConnector
 from ..secret import Secret
+from fastapi import BackgroundTasks
 
 
 class DetectorService:
@@ -18,9 +19,9 @@ class DetectorService:
         self.detectors = [nightfall_detector, regex_detector]
         self.secret_service = secret_service
 
-    async def scan_text_for_secrets(self, sources: List[Source]) -> List[Secret]:
+    async def scan_text_for_secrets(self, sources: List[Source], background_tasks: BackgroundTasks) -> List[Secret]:
         for detector in self.detectors:
             found_secrets = await detector.scan_text_for_secrets(sources)
             for found_secret in found_secrets:
-                self.secret_service.save_all(found_secret)
+                self.secret_service.save_all(found_secret, background_tasks)
         return

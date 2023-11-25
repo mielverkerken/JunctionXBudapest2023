@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from ..source_service import Source
+from ..source import Source
 from ..secret import Secret
 from typing import List
 

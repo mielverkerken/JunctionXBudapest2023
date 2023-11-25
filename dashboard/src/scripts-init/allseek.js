@@ -2,12 +2,23 @@ import Chart from 'chart.js/auto';
 import colorLib from '@kurkle/color';
 import "./charts/chartsjs-utils";
 
-let backendServer = "6561f2fcdcd355c083245fee.mockapi.io";
+let backendServer = "fca1-193-225-122-113.ngrok-free.app";
 
 //startData
 let totalSecrets = "836"
 let activeSecrets = "8"
 let actionedSecrets = "828"
+let totalSources = "2"
+let source_by_id = {}
+let secret_by_id = {}
+
+const confidenceColors = {
+  'VERY_UNLIKELY': 'success',
+  'UNLIKELY': 'success',
+  'POSSIBLE': 'warning',
+  'LIKELY': 'danger',
+  'VERY_LIKELY': 'danger'
+};
 
 // Verticle Bar Chart Data
 const verticleBarChartData = {
@@ -33,87 +44,76 @@ const verticleBarChartData = {
     ],
   };
 
-let main = () => {
+let main = async () => {
     console.log("in main");
-    configureInitialData();
+    // configureInitialData();
+    let secret_list, source_list;
+    [secret_list, source_list] = await fetchData();
+    secret_by_id = secret_list.reduce((map, obj) => (map[obj.id] = obj, map), {});
+    source_by_id = source_list.reduce((map, obj) => (map[obj.id] = obj, map), {});
+    console.log(secret_by_id)
+    console.log(source_by_id)
+    updateUI(secret_list, source_list);
+
+    const webSocketSecrets = new WebSocket("ws://" + backendServer + "/ws/SECRETS");
+    webSocketSecrets.onmessage = wsSecretUpdate;
+    const webSocketSources = new WebSocket("ws://" + backendServer + "/ws/SOURCES");
+    webSocketSources.onmessage = wsSourceUpdate;
+    console.log("websocket connected")
 };
 
-let configureInitialData = () => {
-    console.log("Setting data in KPI's");    
-    calcKPIs(totalSecrets,activeSecrets,actionedSecrets);
-    console.log("Getting initial data from backend");
-    fetch("https://" + backendServer + "/secrets")
-        .then(response => response.json())
-        .then(data => writeInitialData(data));
+let fetchData = async () => {
+  let secret_response = await fetch("https://" + backendServer + "/secrets");
+  let sources_response = await fetch("https://" + backendServer + "/sources");
+  let secret_data = await secret_response.json();
+  let sources_data = await sources_response.json();
+  return [secret_data, sources_data]
 }
 
-let writeInitialData = (secretsJson) => {
-    secretsJson.forEach(secretElement => {
-        let secretSnippet = calcSecretDetailSnippet(secretElement)
-        addSecretDetail(secretSnippet);
-    });
+let updateUI = (secret_list, source_list) => {
+  console.log("Updating UI");
+  totalSecrets = secret_list.length;
+  activeSecrets = Math.round(totalSecrets /3*2);
+  totalSources = source_list.length;
+  updateKPIs(totalSecrets, activeSecrets, totalSources);
+  updateSecretTable(secret_list, source_list);
 }
 
-let calcKPIs = (totalSecrets,activeSecrets,actionedSecrets) => {
-    let sectionTotalSecrets = document.getElementById("totalSecrets")
-    let codeTotal = `
-        <div class="widget-numbers text-white"><span>${totalSecrets}</span></div>
-        `
-    sectionTotalSecrets.insertAdjacentHTML("beforeEnd", codeTotal);
+let updateSecretTable = (secret_list, source_list) => {
+  let secretTable = document.getElementById("secretDetailsBody")
+  secret_list
+    .map(secret => { // join with source
+      secret.source = source_by_id[secret.source_id];
+      return secret;
+    })
+    .map(joinedSecret => mapSecretToRow(joinedSecret))
+    .forEach(row => secretTable.insertAdjacentHTML("beforeEnd", row));
+}
 
-    let sectionActiveSecrets = document.getElementById("activeSecrets")
-    let codeActive = `
-        <div class="widget-numbers text-white"><span>${activeSecrets}</span></div>
-        `
-    sectionActiveSecrets.insertAdjacentHTML("beforeEnd", codeActive);
-
-    let sectionActionedSecrets = document.getElementById("actionedSecrets")
-    let codeActioned = `
-        <div class="widget-numbers text-white"><span>${actionedSecrets}</span></div>
-        `
-    sectionActionedSecrets.insertAdjacentHTML("beforeEnd", codeActioned);
-};
-
-let calcSecretDetailSnippet = (secretElement) => {
-    let color = ''
-    switch (secretElement.confidence) {
-    case 'VERY_UNLIKELY':
-        color = 'success'
-        break;
-    case 'UNLIKELY':
-        color = 'success'
-        break;
-    case 'POSSIBLE':
-        color = 'warning'
-        break;
-    case 'LIKELY':
-        color = 'danger'
-        break;
-    case 'VERY_LIKELY':
-        color = 'danger'
-    break;
-    default:
-        console.log(`confidence type ${secretElement.confidence} not recognized`);
-    }
-
-    let secretDetails = `
+let mapSecretToRow = (secretElement) => {
+  return `
     <tr>
-    <td class="text-center text-muted">${secretElement.id}</td>
-    <td class="text-center">Teams</td>
+    <td class="text-center text-muted">${secretElement.id.substring(0, 6)}</td>
+    <td class="text-center">${secretElement.value}</td>
+    <td class="text-center">${secretElement.source.type}</td>
     <td class="text-center">${secretElement.detector.provider}</td>
     <td class="text-center">${secretElement.detector.name}</td>
-    <td class="text-center">${secretElement.value}</td>
     <td class="text-center">
-        <div class="badge bg-${color}">${secretElement.confidence}</div>
+        <div class="badge bg-${confidenceColors[secretElement.confidence]}">${secretElement.confidence}</div>
     </td>
     </tr>
     `
-    return secretDetails
 }
 
-let addSecretDetail = (secretSnippet) => {
-    let sectionDetailedSecrets = document.getElementById("secretDetailsBody")
-    sectionDetailedSecrets.insertAdjacentHTML("beforeEnd", secretSnippet);
+let updateKPIs = (totalSecrets, activeSecrets, actionedSecrets) => {
+  let to_update = ["totalSecrets", "activeSecrets", "actionedSecrets"]
+  let values = [totalSecrets, activeSecrets, actionedSecrets]
+  for (let i = 0; i < to_update.length; i++) {
+    let section = document.getElementById(to_update[i])
+    section.innerHTML = `
+      <div class="widget-numbers text-white"><span>${values[i]}</span></div>
+    `
+  }
 };
 
   // Verticle Bar Chart
@@ -140,12 +140,28 @@ let addSecretDetail = (secretSnippet) => {
     }
   }, 500);
 
-const backendSocket = new WebSocket("wss://" + backendServer);
-
-//   backendSocket.onmessage = (event) => {
-//     console.log(event.data);
-//     let secretDetail = calcSecretDetailSnippet(event.data)
-//     addSecretDetail(secretDetail)
-//   };
+  let wsSecretUpdate = async (event) => {
+    console.log("ws Secret update");
+    let newSecret = JSON.parse(event.data); 
+    secret_by_id[newSecret["id"]] = newSecret;
+    updateSecretTable([newSecret], []);
+    updateKPIs(
+      Object.keys(secret_by_id).length, 
+      Math.round(Object.keys(secret_by_id).length/3*2),
+      Object.keys(source_by_id).length
+      );
+  }
+  
+  let wsSourceUpdate = async (event) => { 
+    console.log("ws Source update")
+    let newSource = JSON.parse(event.data); 
+    console.log(newSource);
+    source_by_id[newSource["id"]] = newSource;
+    updateKPIs(
+      Object.keys(secret_by_id).length, 
+      Math.round(Object.keys(secret_by_id).length/3*2),
+      Object.keys(source_by_id).length
+      );
+  }  
 
 main();
