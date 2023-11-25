@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from orchestrator.secret import Secret
+from ..secret import Secret
 from typing import List
 
 

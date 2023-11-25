@@ -5,16 +5,32 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: FastAPI",
+            "name": "Python: FastAPI Orchestrator",
             "type": "python",
             "request": "launch",
             "module": "uvicorn",
+            "python": "/home/mverkerk/workspace/JunctionXBudapest2023/orchestrator/env/bin/python",
             "args": [
-                "orchestrator.main:app",
+                "src.main:app",
+                "--env-file", "dev.env",
+                "--port", "8001",
                 "--reload",
-                "--env-file",
-                "orchestrator/dev.env"
             ],
+            "cwd": "/home/mverkerk/workspace/JunctionXBudapest2023/orchestrator/",
+            "jinja": true,
+            "justMyCode": true
+        }, 
+        {
+            "name": "Python: FastAPI Regex-Detector",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",            
+            "python": "/home/mverkerk/workspace/JunctionXBudapest2023/regex_detector/env/bin/python",
+            "args": [
+                "src.main:app",
+                "--reload",
+            ],
+            "cwd": "/home/mverkerk/workspace/JunctionXBudapest2023/regex_detector/",
             "jinja": true,
             "justMyCode": true
         }

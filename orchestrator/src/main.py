@@ -1,12 +1,12 @@
 from typing import Dict, List
 from fastapi import FastAPI, BackgroundTasks
-from orchestrator.secret import Secret
-from orchestrator.secret_service import SecretService
+from .secret import Secret
+from .secret_service import SecretService
 from pydantic import BaseModel
 import json
 import os
-from orchestrator.detectors.detector import DetectorService
-from orchestrator.detectors.nightfallAPIConnector import NightFallAPIConnector
+from .detectors.detector import DetectorService
+from .detectors.nightfallAPIConnector import NightFallAPIConnector
 
 
 app = FastAPI()
