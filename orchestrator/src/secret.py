@@ -4,7 +4,7 @@ from typing import Dict
 import uuid
 
 from nightfall import Finding
-from .source_service import Source
+from .source import Source
 
 CONTEXT_BYTES = 20
 

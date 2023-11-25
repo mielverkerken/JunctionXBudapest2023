@@ -4,7 +4,7 @@ from nightfall import Nightfall, Finding
 
 from ..secret import Secret
 from ..detectors.idetector import IDetector
-from ..source_service import Source
+from ..source import Source
 
 
 class NightFallAPIConnector(IDetector):
