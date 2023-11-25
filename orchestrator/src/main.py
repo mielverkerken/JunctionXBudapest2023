@@ -45,7 +45,7 @@ async def read_secret(id: str):
 
 @app.post("/secrets")
 async def create_secret(body: Dict):
-    secret = Secret(**body)
+    secret = Secret(**body.get("data"))
     secret = secret_service.save(secret)
     return {"data": secret}
 
