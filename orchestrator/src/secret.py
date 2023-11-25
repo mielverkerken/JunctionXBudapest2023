@@ -1,7 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from enum import Enum
 from typing import Dict
 import uuid
+import json
 
 from nightfall import Finding
 from .source import Source
@@ -15,6 +16,9 @@ class Detector():
     provider : str
     properties : Dict[str, str] = None
 
+    def to_dict(self):
+        return asdict(self)
+
 class Confidence(Enum):
     """Confidence describes the certainty that a piece of content matches a detector."""
     VERY_UNLIKELY = "VERY_UNLIKELY"
@@ -23,11 +27,17 @@ class Confidence(Enum):
     LIKELY = "LIKELY"
     VERY_LIKELY = "VERY_LIKELY"
 
+    def to_dict(self):
+        return self.value
+
 @dataclass
 class Range():
     """Range describes the location of a secret in a piece of content."""
     start: int
     end: int
+
+    def to_dict(self):
+        return asdict(self)
 
 
 @dataclass
@@ -79,3 +89,19 @@ class Secret:
             confidence=Confidence.VERY_LIKELY if match['confidence'] == 'high' else Confidence.UNLIKELY,
             source_id=source.id,
         )
+    
+    def to_dict(self):
+        return {
+            "value": self.value,
+            "detector": self.detector.to_dict(),
+            "confidence": self.confidence.to_dict(),
+            "secret_type": self.secret_type,
+            "context_before": self.context_before,
+            "context_after": self.context_after,
+            "range": self.range.to_dict() if self.range else None,
+            "id": str(self.id),
+            "source_id": str(self.source_id) if self.source_id else None
+        }
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
