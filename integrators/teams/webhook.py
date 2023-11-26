@@ -16,7 +16,7 @@ config = configparser.ConfigParser()
 config.read(['config.cfg', 'config.dev.cfg'])
 azure_settings = config['azure']
 graph: Graph = Graph(azure_settings)
-server = "http://orchestrator"
+server = "https://orchestrator-xzpcu7nwvq-ew.a.run.app"
 
 app = FastAPI()
 
