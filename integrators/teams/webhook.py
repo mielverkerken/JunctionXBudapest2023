@@ -16,7 +16,7 @@ config = configparser.ConfigParser()
 config.read(['config.cfg', 'config.dev.cfg'])
 azure_settings = config['azure']
 graph: Graph = Graph(azure_settings)
-server = "https://fca1-193-225-122-113.ngrok-free.app"
+server = "http://orchestrator"
 
 app = FastAPI()
 

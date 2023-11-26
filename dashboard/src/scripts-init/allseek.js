@@ -2,7 +2,8 @@ import Chart from 'chart.js/auto';
 import colorLib from '@kurkle/color';
 import "./charts/chartsjs-utils";
 
-let backendServer = "fca1-193-225-122-113.ngrok-free.app";
+let backendServer = "localhost:80";
+
 
 //startData
 let totalSecrets = "836"
@@ -63,8 +64,8 @@ let main = async () => {
 };
 
 let fetchData = async () => {
-  let secret_response = await fetch("https://" + backendServer + "/secrets");
-  let sources_response = await fetch("https://" + backendServer + "/sources");
+  let secret_response = await fetch("http://" + backendServer + "/secrets");
+  let sources_response = await fetch("http://" + backendServer + "/sources");
   let secret_data = await secret_response.json();
   let sources_data = await sources_response.json();
   return [secret_data, sources_data]
