@@ -1,0 +1,36 @@
+version: '3'
+services:
+  dashboard:
+    image: mielverkerken/dashboard:latest
+    ports:
+      - "8080:80"
+    networks:
+      - mynetwork
+
+  regex-detector:
+    image: mielverkerken/regex-detector:latest
+    ports:
+      - "8000:8000"
+    networks:
+      - mynetwork
+
+  orchestrator:
+    image: mielverkerken/orchestrator:latest
+    env_file:
+      - orchestrator/dev.env
+    ports:
+    - "80:80"
+    networks:
+      - mynetwork
+
+  teams_integration:
+    image: mielverkerken/teams-integration:latest
+    ports:
+    - "8001:8000"
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
+

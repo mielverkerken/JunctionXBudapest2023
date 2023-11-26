@@ -2,7 +2,8 @@ import Chart from 'chart.js/auto';
 import colorLib from '@kurkle/color';
 import "./charts/chartsjs-utils";
 
-let backendServer = "fca1-193-225-122-113.ngrok-free.app";
+let backendServer = "orchestrator-xzpcu7nwvq-ew.a.run.app";
+
 
 //startData
 let totalSecrets = "836"
@@ -55,9 +56,9 @@ let main = async () => {
     console.log(source_by_id)
     updateUI(secret_list, source_list);
 
-    const webSocketSecrets = new WebSocket("ws://" + backendServer + "/ws/SECRETS");
+    const webSocketSecrets = new WebSocket("wss://" + backendServer + "/ws/SECRETS");
     webSocketSecrets.onmessage = wsSecretUpdate;
-    const webSocketSources = new WebSocket("ws://" + backendServer + "/ws/SOURCES");
+    const webSocketSources = new WebSocket("wss://" + backendServer + "/ws/SOURCES");
     webSocketSources.onmessage = wsSourceUpdate;
     console.log("websocket connected")
 };

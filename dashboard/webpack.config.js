@@ -24,10 +24,10 @@ for (let i = 0; i < pages.length; i++) {
 }
 
 module.exports = (options) => {
-    const dest = Path.join(__dirname, 'architectui-html-free');
+    const dest = Path.join(__dirname, 'allseek-dashboard-build');
 
     let webpackConfig = {
-        mode: 'none',
+        mode: 'production',
         devtool: options.devtool,
         entry: {
             main: './src/app.js',

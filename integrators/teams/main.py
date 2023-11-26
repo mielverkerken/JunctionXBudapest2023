@@ -28,7 +28,7 @@ async def main():
         print('8. get mail by messageid')
 
         try:
-            choice = int(input())
+            choice = 7 # int(input())
         except ValueError:
             choice = -1
 
